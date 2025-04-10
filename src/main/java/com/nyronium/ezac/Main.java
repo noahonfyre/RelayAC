@@ -36,18 +36,14 @@ public class Main {
 
     private static int packetId = 0;
 
-    public static void registerPackets() {
+    public Main() {
+        MinecraftForge.EVENT_BUS.register(this);
+
         CHANNEL.registerMessage(packetId++,
                 ExchangePacket.class,
                 ExchangePacket::encode,
                 ExchangePacket::decode,
                 ExchangePacket::handle);
-    }
-
-    public Main() {
-        IEventBus modEventBus = MinecraftForge.EVENT_BUS;
-        MinecraftForge.EVENT_BUS.register(this);
-        registerPackets();
     }
 
     @Mod.EventBusSubscriber(modid = ID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
