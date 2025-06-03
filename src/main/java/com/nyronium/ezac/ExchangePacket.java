@@ -82,20 +82,30 @@ public class ExchangePacket {
             Main.LOGGER.info("[{}]", clientOnlyModString);
 
             List<String> flaggedMods = new ArrayList<>();
+            List<String> flaggedResourcePacks = new ArrayList<>();
 
-            Predicate<String> filter = switch (ConfigHandler.mode.get()) {
-                case WHITELIST -> mod -> !ConfigHandler.list.get().contains(mod);
-                case BLACKLIST -> mod -> ConfigHandler.list.get().contains(mod);
-                case IGNORE -> mod -> false;
+            Predicate<String> modsFilter = switch (ConfigHandler.mode.get()) {
+                case WHITELIST -> mod -> !ConfigHandler.mods.get().contains(mod);
+                case BLACKLIST -> mod -> ConfigHandler.mods.get().contains(mod);
+            };
+
+            Predicate<String> resourcePacksFilter = switch (ConfigHandler.mode.get()) {
+                case WHITELIST -> resourcePack -> !ConfigHandler.resourcePacks.get().contains(resourcePack);
+                case BLACKLIST -> resourcePack -> ConfigHandler.resourcePacks.get().contains(resourcePack);
             };
 
             for (String mod : clientOnlyMods) {
-                if (filter.test(mod)) {
+                if (modsFilter.test(mod)) {
                     flaggedMods.add(mod);
                 }
             }
+            for (String resourcePack : resourcePacks) {
+                if (resourcePacksFilter.test(resourcePack)) {
+                    flaggedResourcePacks.add(resourcePack);
+                }
+            }
 
-            if (!flaggedMods.isEmpty()) {
+            if (!flaggedMods.isEmpty() || !flaggedResourcePacks.isEmpty()) {
                 if(sender.getServer() == null) return;
                 for(ServerPlayer player : sender.getServer().getPlayerList().getPlayers()) {
                     if(sender.getServer().getPlayerList().isOp(player.getGameProfile())) {
@@ -105,6 +115,11 @@ public class ExchangePacket {
                                 .append("\n\n");
 
                         for(String mod : flaggedMods) {
+                            message.append(Component.literal("- ").withStyle(ChatFormatting.DARK_GRAY))
+                                    .append(ComponentUtils.defaultGradient(mod));
+                        }
+
+                        for(String mod : flaggedResourcePacks) {
                             message.append(Component.literal("- ").withStyle(ChatFormatting.DARK_GRAY))
                                     .append(ComponentUtils.defaultGradient(mod));
                         }
@@ -139,7 +154,7 @@ public class ExchangePacket {
             }
 
             double secondsPassed = Math.round(new Date().getTime()-checkStart.getTime()) / 1000.0;
-            Main.LOGGER.info("List flagging check on player {} has been performed successfully in {}s with {} mods flagged.", sender.getGameProfile().getName(), secondsPassed, flaggedMods.size());
+            Main.LOGGER.info("List flagging check on player {} has been performed successfully in {}s with {} mods and {} resource packs flagged.", sender.getGameProfile().getName(), secondsPassed, flaggedMods.size(), flaggedResourcePacks.size());
             Main.LOGGER.info("Packet exchange concluded.");
         });
         ctx.get().setPacketHandled(true);

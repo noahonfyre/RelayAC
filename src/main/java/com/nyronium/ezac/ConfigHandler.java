@@ -9,19 +9,30 @@ public class ConfigHandler {
     private static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
     public static final ForgeConfigSpec SPEC;
 
-    public static ForgeConfigSpec.ConfigValue<List<? extends String>> list;
+    public static ForgeConfigSpec.ConfigValue<List<? extends String>> mods;
+    public static ForgeConfigSpec.ConfigValue<List<? extends String>> resourcePacks;
     public static ForgeConfigSpec.EnumValue<AntiCheatMode> mode;
     public static ForgeConfigSpec.EnumValue<AntiCheatAction> action;
 
     static {
         BUILDER.push("Server Configuration");
 
-        list = BUILDER
+        mods = BUILDER
                 .comment(
                         " A list of all mods that should be added to either the blacklist or whitelist."
                 )
                 .defineList(
-                        "list",
+                        "mods",
+                        List.of(),
+                        obj -> obj instanceof String
+                );
+
+        resourcePacks = BUILDER
+                .comment(
+                        " A list of all resource packs that should be added to either the blacklist or whitelist."
+                )
+                .defineList(
+                        "resourcePacks",
                         List.of(),
                         obj -> obj instanceof String
                 );
@@ -30,12 +41,11 @@ public class ConfigHandler {
                 .comment(
                         " How should the mods in the list be treated?",
                         " BLACKLIST will flag all mods of the client that are in the list.",
-                        " WHITELIST will flag all mods of the client that aren't in the list.",
-                        " IGNORE won't do anything with the mods in the list."
+                        " WHITELIST will flag all mods of the client that aren't in the list."
                 )
                 .defineEnum(
                         "mode",
-                        AntiCheatMode.IGNORE
+                        AntiCheatMode.BLACKLIST
                 );
 
         action = BUILDER
@@ -62,8 +72,7 @@ public class ConfigHandler {
 
     public enum AntiCheatMode {
         BLACKLIST,
-        WHITELIST,
-        IGNORE
+        WHITELIST
     }
 
     public enum AntiCheatAction {
